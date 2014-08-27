@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.hujl.cloudcast.MainActivity" >
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/link_dropbox"/>
+    
+     <item
+        android:id="@+id/action_select_folder"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/select_folder"/>
+
+</menu>

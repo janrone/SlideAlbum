@@ -1,0 +1,15 @@
+﻿# 以'#'开始的行，被视为注释.                                                                                                                          
+  
+Thumbs.db
+.DS_Store
+.project
+.classpath
+.gradle/
+.settings/
+.idea/
+  
+# 忽略所有.o和 .a文件.  
+*.[oa] 
+src/com/hujl/slidealbum/AppInfo.java
+gen/
+bin/
