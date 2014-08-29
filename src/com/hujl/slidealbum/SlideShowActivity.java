@@ -152,7 +152,7 @@ public class SlideShowActivity extends Activity {
 				mApi.getSession().startOAuth2Authentication(
 						SlideShowActivity.this);
 			}
-		} else {
+		} else if (id == R.id.action_select_folder) {
 			if (Utils.mLoggedIn == true) {
 				Intent intent = new Intent(SlideShowActivity.this,
 						FolderActivity.class);
