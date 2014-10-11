@@ -10,6 +10,10 @@ import java.io.InputStream;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Build;
+import android.util.Log;
+import android.view.View;
+import android.view.Window;
 
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AccessTokenPair;
@@ -180,5 +184,4 @@ public class Utils {
 		}
 
 	}
-
 }

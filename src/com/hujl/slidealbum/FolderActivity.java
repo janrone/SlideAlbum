@@ -2,22 +2,31 @@ package com.hujl.slidealbum;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.hujl.slidealbum.R;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
+import com.readystatesoftware.systembartint.SystemBarTintManager.SystemBarConfig;
+
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class FolderActivity extends Activity {
 	
 	private ListView mList;
+	private ProgressBar mProgressBar;
 	private DropboxAPI<AndroidAuthSession> mApi; 
 	private FolderAdapter folderAdapter ;
 	private List<Entry> listEntry = null;
@@ -32,9 +41,27 @@ public class FolderActivity extends Activity {
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		 
 		mList = (ListView) findViewById(R.id.list);
+		mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+		
 		mApi = CloudCast.mApi;
+		
+		initSystemBar();
 		loadFolders();
 		
+	}
+	
+	private void initSystemBar() {
+	    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+	        //setTranslucentStatus(true);
+	        SystemBarTintManager tintManager = new SystemBarTintManager(this);
+	        tintManager.setStatusBarTintEnabled(true);
+	        
+	        int actionBarColor = Color.parseColor("#DDDDDD");
+	        tintManager.setStatusBarTintColor(actionBarColor);
+	        //tintManager.setStatusBarTintResource(android.R.drawable.ic_notification_overlay);
+	        SystemBarConfig config = tintManager.getConfig();
+	        mList.setPadding(0, config.getPixelInsetTop(true), 0, config.getPixelInsetBottom());
+	    }
 	}
 	
 	private void loadFolders() {
@@ -90,6 +117,7 @@ public class FolderActivity extends Activity {
 		protected void onPostExecute(Void result) {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
+			mProgressBar.setVisibility(View.GONE);
 			if (listEntry == null){
 				isLoadFolder = false;
 				Toast.makeText(FolderActivity.this, "get folder error !", Toast.LENGTH_SHORT).show();

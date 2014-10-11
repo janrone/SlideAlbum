@@ -1,17 +1,26 @@
 package com.hujl.slidealbum;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.dropbox.client2.DropboxAPI;
@@ -25,6 +34,8 @@ import com.marvinlabs.widget.slideshow.SlideShowView;
 import com.marvinlabs.widget.slideshow.adapter.GenericBitmapAdapter;
 import com.marvinlabs.widget.slideshow.adapter.RemoteBitmapAdapter;
 import com.marvinlabs.widget.slideshow.picasso.GenericPicassoBitmapAdapter;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
+import com.readystatesoftware.systembartint.SystemBarTintManager.SystemBarConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
@@ -37,15 +48,15 @@ public class SlideShowActivity extends Activity {
 
 	private SlideShowView slideShowView;
 	private SlideShowAdapter adapter;
-	
+
+	private SystemBarTintManager mTintManager;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		// Go fullscreen
-		// requestWindowFeature(Window.FEATURE_NO_TITLE);
-		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		mTintManager = new SystemBarTintManager(this);
+		mTintManager.setStatusBarTintEnabled(true);
 
 		// Set screen always on
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -54,17 +65,25 @@ public class SlideShowActivity extends Activity {
 		setContentView(R.layout.activity_slideshow);
 
 		slideShowView = (SlideShowView) findViewById(R.id.slideshow);
+		slideShowView.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				initSystemBar();
+			}
+		});
 
 		AndroidAuthSession session = Utils.buildSession(SlideShowActivity.this);
 		mApi = new DropboxAPI<AndroidAuthSession>(session);
 		CloudCast.mApi = mApi;
-
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void onResume() {
 		super.onResume();
+		
+		initSystemBar();
 
 		AndroidAuthSession session = mApi.getSession();
 
@@ -86,7 +105,7 @@ public class SlideShowActivity extends Activity {
 			}
 		}
 
-		//String castImageUrl = prefs.getString(Utils.CAST_IMAGE_URL, "");
+		// String castImageUrl = prefs.getString(Utils.CAST_IMAGE_URL, "");
 		// if (castImageUrl.equals("")) {
 		// new GetCastImage().execute(folderPath, null, null);
 		// }
@@ -94,21 +113,80 @@ public class SlideShowActivity extends Activity {
 		// ArrayList<String> list = getCastImageUrlsFromPrefs();
 		// if(list != null) startSlideShow(list);
 
-		if (!Utils.isExistsImageUrlFile(getContext()) || getImageUrlListFromFile() == null || getImageUrlListFromFile().size() == 0) {
+		if (!Utils.isExistsImageUrlFile(getContext())
+				|| getImageUrlListFromFile() == null
+				|| getImageUrlListFromFile().size() == 0) {
 			new GetCastImage().execute(getImageFolder(), null, null);
 		} else {
 			startSlideShow(getImageUrlListFromFile());
 		}
 	}
 
+	private void initSystemBar() {
+		View view = getWindow().getDecorView();
+
+		int status = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+		boolean isFull = view.getSystemUiVisibility() == status;
+		if (isFull) {
+			showSystemUI(view);
+			int actionBarColor = Color.parseColor("#DDDDDD");
+			mTintManager.setStatusBarTintColor(actionBarColor);
+		} else {
+			hideSystemUI(view);
+			int actionBarColor = Color.parseColor("#00000000");
+			mTintManager.setStatusBarTintColor(actionBarColor);
+		}
+	}
+
+	private void setActionBar() {
+		ActionBar actionBar = getActionBar();
+		if (actionBar.isShowing()) {
+			actionBar.hide();
+			int actionBarColor = Color.parseColor("#00000000");
+			mTintManager.setStatusBarTintColor(actionBarColor);
+		} else {
+			actionBar.show();
+			int actionBarColor = Color.parseColor("#DDDDDD");
+			mTintManager.setStatusBarTintColor(actionBarColor);
+		}
+	}
+
+	private void setTranslucentStatus(boolean on) {
+		Window win = getWindow();
+		WindowManager.LayoutParams winParams = win.getAttributes();
+		final int bits = WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+		if (on) {
+			winParams.flags |= bits;
+		} else {
+			winParams.flags &= ~bits;
+		}
+		win.setAttributes(winParams);
+	}
+
+	public static int getStatusBarHeight(Context context) {
+		int result = 0;
+		int resourceId = context.getResources().getIdentifier(
+				"status_bar_height", "dimen", "android");
+		if (resourceId > 0) {
+			result = context.getResources().getDimensionPixelSize(resourceId);
+		}
+
+		return result;
+	}
+
 	@SuppressWarnings("unchecked")
 	public ArrayList<String> getImageUrlListFromFile() {
 		try {
 			Gson gson = new Gson();
-			return gson.fromJson(
-					Utils.readAssetsFileString(getContext()),
+			return gson.fromJson(Utils.readAssetsFileString(getContext()),
 					java.util.ArrayList.class);
-			
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -152,7 +230,7 @@ public class SlideShowActivity extends Activity {
 				mApi.getSession().startOAuth2Authentication(
 						SlideShowActivity.this);
 			}
-		} else if (id == R.id.action_select_folder) {
+		} else if (id == R.id.select_folder) {
 			if (Utils.mLoggedIn == true) {
 				Intent intent = new Intent(SlideShowActivity.this,
 						FolderActivity.class);
@@ -161,6 +239,10 @@ public class SlideShowActivity extends Activity {
 				mApi.getSession().startOAuth2Authentication(
 						SlideShowActivity.this);
 			}
+		} else if (id == R.id.action_about) {
+			Intent intent = new Intent(SlideShowActivity.this,
+					AboutActivity.class);
+			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -247,7 +329,6 @@ public class SlideShowActivity extends Activity {
 		// Some listeners if needed
 		slideShowView.setOnSlideShowEventListener(slideShowListener);
 		// slideShowView.setOnSlideClickListener(slideClickListener);
-
 		// Then attach the adapter
 		slideShowView.play();
 	}
@@ -255,8 +336,7 @@ public class SlideShowActivity extends Activity {
 	private SlideShowView.OnSlideClickListener slideClickListener = new SlideShowView.OnSlideClickListener() {
 		@Override
 		public void onItemClick(SlideShowView parent, int position) {
-			Toast.makeText(SlideShowActivity.this,
-					"Slide clicked: " + position, Toast.LENGTH_SHORT).show();
+			toggleHideyBar();
 		}
 	};
 
@@ -364,6 +444,25 @@ public class SlideShowActivity extends Activity {
 
 	Context getContext() {
 		return SlideShowActivity.this;
+	}
+
+	public void toggleHideyBar() {
+
+	}
+
+	public void hideSystemUI(View view) {
+		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+	}
+
+	public void showSystemUI(View view) {
+		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 	}
 
 }

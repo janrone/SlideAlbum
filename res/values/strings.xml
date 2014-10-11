@@ -3,11 +3,45 @@
 
     <string name="app_name">Slide Album</string>
     <string name="action_settings">Settings</string>
-    <string name="action_about">About CloudCast</string>
+    <string name="action_about">About</string>
     <string name="select_folder">Select Folder</string>
     <string name="title_activity_slideshow">SlideShow</string>
     <string name="link_dropbox">Link DropBox</string>
     <string name="done">Done</string>
     <string name="unlink_dropbox">UnLink DropBox</string>
+    <string name="pref_version_title">Version 0.1.0 Beta</string>
+    <string name="pref_build_title">Build</string>
+    <string name="pref_credits_title">Developers</string>
+    <string name="pref_credits_summary">Developed and Designed By Shirwa Mohamed(@team_shirwa) and Anthony Kiniyalocts(@A_Kiniyalocts)</string>
+    <string name="pref_header_about_title">About</string>
+    <string name="pref_header_about_summary">Details of App and developer</string>
+    <string name="pref_header_app_settings_title">App Settings</string>
+    <string name="pref_header_app_settings_summary">customize and enable certain settings</string>
+    <string name="pref_hidden_files">Hidden Files</string>
+    <string name="pref_hidden_files_on">Show hidden files</string>
+    <string name="pref_hidden_files_off">Show hidden files</string>
+    <string name="pref_Theme_title">Themes</string>
+    <string name="pref_Theme_dialog">Choose Theme</string>
+    <string name="pref_Theme_default">Light</string>
+    <string name="pref_app_details">App Details</string>
+    <string name="app_details_summary">Send email</string>
+    <string name="pref_about_developers">Developers</string>
+    <string name="pref_shirwa">Janrone</string>
+    <string name="app_details_shirwa_details">Developer</string>
+    <string name="pref_anthony">Anthony Kiniyalocts</string>
+    <string name="pref_about_open_source_Libraries">Libraries Used</string>
+    <string name="pref_android_slideshow_widget">Android Slideshow Widget</string>
+    <string name="app_details_android_slideshow_widget_info">marvinlabs</string>
+    <string name="pref_about_social_connections">Social Connections</string>
+    <string name="pref_social_google_plus">Google+</string>
+    <string name="app_social_google_plus">Join this community for constant updates and information</string>
+    <string name="pref_social_twitter">Twitter</string>
+    <string name="app_social_twitter_summary">Follow me on Twitter!</string>
+    <string name="app_settings_admin">Administrative tasks</string>
+    <string name="app_settings_apperance">Appearance</string>
+    <string name="pref_sort_title">Sort Options</string>
+    <string name="pref_sort_dialog">Choose Sort Option</string>
+    <string name="app_details_system_bar_tint">jgilfelt</string>
+    <string name="pref_system_bar">System Bar Tint</string>
 
 </resources>
