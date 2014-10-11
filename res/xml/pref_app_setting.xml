@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:paddingBottom="@dimen/nav_bar_height"
+    android:paddingTop="@dimen/kitkat_displacement" >
+
+    <PreferenceCategory android:title="@string/pref_app_details" >
+        <Preference
+            android:key="app_details"
+            android:summary="@string/app_details_summary"
+            android:title="@string/pref_version_title" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_about_developers" >
+        <Preference
+            android:key="pref_details_janrone"
+            android:summary="@string/app_details_shirwa_details"
+            android:title="@string/pref_shirwa" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_about_social_connections" >
+        <Preference
+            android:key="pref_about_social_twitter"
+            android:summary="@string/app_social_twitter_summary"
+            android:title="@string/pref_social_twitter" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_about_open_source_Libraries" >
+        <Preference
+            android:key="pref_about_android_slideshow_widget"
+            android:summary="@string/app_details_android_slideshow_widget_info"
+            android:title="@string/pref_android_slideshow_widget" />
+        <Preference
+            android:key="pref_about_system_bar_tint"
+            android:summary="@string/app_details_system_bar_tint"
+            android:title="@string/pref_system_bar" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

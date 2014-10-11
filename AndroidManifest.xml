@@ -43,9 +43,16 @@
             android:label="@string/title_activity_slideshow" >
         </activity
         -->
-        <activity android:name="com.hujl.slidealbum.SettingsActivity" />
         <activity
             android:name="com.hujl.slidealbum.AboutActivity"
+            android:parentActivityName="com.hujl.slidealbum.SlideShowActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.hujl.cloudcast.SlideShowActivity" />
+        </activity>
+        
+         <activity
+            android:name="com.hujl.slidealbum.SettingsActivity"
             android:parentActivityName="com.hujl.slidealbum.SlideShowActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

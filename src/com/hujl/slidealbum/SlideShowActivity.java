@@ -243,6 +243,10 @@ public class SlideShowActivity extends Activity {
 			Intent intent = new Intent(SlideShowActivity.this,
 					AboutActivity.class);
 			startActivity(intent);
+		} else if (id == R.id.action_settings) {
+			Intent intent = new Intent(SlideShowActivity.this,
+					SettingsActivity.class);
+			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
