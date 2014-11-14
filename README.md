@@ -1,3 +1,3 @@
 SlideAlbum
 
-Show the cloud albumas slide .
+Slide the photos of cloud albumas .
