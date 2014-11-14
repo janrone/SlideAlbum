@@ -1,3 +1,3 @@
 SlideAlbum
 
-Slide the photos of cloud albumas .
+Slide the photos of cloud albums .
