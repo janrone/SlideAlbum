@@ -121,7 +121,7 @@ public class SlideShowActivity extends Activity {
 			startSlideShow(getImageUrlListFromFile());
 		}
 	}
-
+	
 	private void initSystemBar() {
 		View view = getWindow().getDecorView();
 
@@ -207,11 +207,11 @@ public class SlideShowActivity extends Activity {
 		super.onPrepareOptionsMenu(menu);
 		menu.clear();
 		getMenuInflater().inflate(R.menu.slide_show, menu);
-		if (Utils.mLoggedIn) {
-			menu.getItem(0).setTitle(R.string.unlink_dropbox);
-		} else {
-			menu.getItem(0).setTitle(R.string.link_dropbox);
-		}
+		//if (Utils.mLoggedIn) {
+		//	menu.getItem(0).setTitle(R.string.unlink_dropbox);
+		//} else {
+		//	menu.getItem(0).setTitle(R.string.link_dropbox);
+		//}
 		return true;
 
 	}
@@ -219,7 +219,7 @@ public class SlideShowActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
+		// automatically handle clicks on the Home/Up button, so long 
 		// as you specify a parent activity in AndroidManifest.xml.
 
 		int id = item.getItemId();
@@ -306,12 +306,13 @@ public class SlideShowActivity extends Activity {
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inSampleSize = 2;
 		adapter = new RemoteBitmapAdapter(this, thumbs, opts, CloudCast.mApi);
-		return adapter;
+		return adapter; 
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	protected void onStop() {
+		Log.d(Utils.TAG, " slide stop ...");
 		if (adapter instanceof GenericBitmapAdapter) {
 			((GenericBitmapAdapter) adapter).shutdown();
 		} else if (adapter instanceof GenericPicassoBitmapAdapter) {

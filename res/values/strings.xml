@@ -24,14 +24,14 @@
     <string name="pref_Theme_dialog">Choose Theme</string>
     <string name="pref_Theme_default">Light</string>
     <string name="pref_app_details">App Details</string>
-    <string name="app_details_summary">Send email</string>
+    <string name="app_details_summary">Send Email</string>
     <string name="pref_about_developers">Developers</string>
     <string name="pref_shirwa">Janrone</string>
     <string name="app_details_shirwa_details">Developer</string>
     <string name="pref_anthony">Anthony Kiniyalocts</string>
     <string name="pref_about_open_source_Libraries">Libraries Used</string>
     <string name="pref_android_slideshow_widget">Android Slideshow Widget</string>
-    <string name="app_details_android_slideshow_widget_info">marvinlabs</string>
+   
     <string name="pref_about_social_connections">Social Connections</string>
     <string name="pref_social_google_plus">Google+</string>
     <string name="app_social_google_plus">Join this community for constant updates and information</string>
@@ -41,7 +41,18 @@
     <string name="app_settings_apperance">Appearance</string>
     <string name="pref_sort_title">Sort Options</string>
     <string name="pref_sort_dialog">Choose Sort Option</string>
+    
+     <string name="app_details_android_slideshow_widget_info">marvinlabs</string>
+    
     <string name="app_details_system_bar_tint">jgilfelt</string>
     <string name="pref_system_bar">System Bar Tint</string>
+    
+    <string name="pref_account">ACCOUNT TYPE</string>
+    <string name="pref_account_dropbox">DropBox</string>
+    <string name="pref_account_dropbox_summary">Link DropBox</string>
+    
+    <string name="pref_select_folder">Slide Source</string>
+    <string name="pref_cloud_source">Slide Source</string>
+    <string name="pref_cloud_source_summary">Slide Source</string>
 
 </resources>

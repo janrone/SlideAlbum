@@ -52,6 +52,7 @@ public class AboutActivity extends PreferenceActivity {
 				return true;
 			}
 		});
+		
 		findPreference("pref_about_system_bar_tint").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference paramPreference) {
 				Intent localIntent = new Intent("android.intent.action.VIEW", Uri.parse("https://github.com/jgilfelt/SystemBarTint"));

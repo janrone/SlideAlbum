@@ -3,12 +3,20 @@
     android:paddingBottom="@dimen/nav_bar_height"
     android:paddingTop="@dimen/kitkat_displacement" >
 
-    <PreferenceCategory android:title="@string/pref_app_details" >
+    <PreferenceCategory android:title="@string/pref_account" >
         <Preference
-            android:key="app_details"
-            android:summary="@string/app_details_summary"
-            android:title="@string/pref_version_title" />
+            android:key="pre_dropbox"
+            android:summary="@string/pref_account_dropbox_summary"
+            android:title="@string/pref_account_dropbox" />
     </PreferenceCategory>
+    
+    <PreferenceCategory android:title="@string/pref_select_folder" >
+        <Preference
+            android:key="pre_cloud"
+            android:summary="@string/pref_cloud_source_summary"
+            android:title="@string/pref_cloud_source" />
+    </PreferenceCategory>
+    
     <PreferenceCategory android:title="@string/pref_about_developers" >
         <Preference
             android:key="pref_details_janrone"
