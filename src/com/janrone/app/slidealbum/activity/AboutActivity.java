@@ -28,7 +28,8 @@ public class AboutActivity extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.pref_app_about);
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 
-		initSystemBar();
+		View view = findViewById(android.R.id.list);
+		Utils.initSystemBar(this, view);
 		
 		Preference preVersion = findPreference("app_details");
 		try {
@@ -38,6 +39,15 @@ public class AboutActivity extends PreferenceActivity {
 		}
 		
 		 
+       findPreference("app_details").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			public boolean onPreferenceClick(Preference paramPreference) {
+				Intent localIntent = new Intent("android.intent.action.SENDTO", Uri.fromParts("mailto", "janronehoo@gmail.com", null));
+	            localIntent.putExtra("android.intent.extra.SUBJECT", "Contact Us");
+	            AboutActivity.this.startActivity(Intent.createChooser(localIntent, "Send email..."));
+				return true;
+			}
+		});
+       
        findPreference("app_details").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference paramPreference) {
 				Intent localIntent = new Intent("android.intent.action.SENDTO", Uri.fromParts("mailto", "janronehoo@gmail.com", null));
@@ -62,21 +72,6 @@ public class AboutActivity extends PreferenceActivity {
 				return true;
 			}
 		});
-	}
-
-	private void initSystemBar() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			// setTranslucentStatus(true);
-			SystemBarTintManager tintManager = new SystemBarTintManager(this);
-			tintManager.setStatusBarTintEnabled(true);
-
-			int actionBarColor = Color.parseColor("#DDDDDD");
-			tintManager.setStatusBarTintColor(actionBarColor);
-			// tintManager.setStatusBarTintResource(android.R.drawable.ic_notification_overlay);
-			SystemBarConfig config = tintManager.getConfig();
-			View view = findViewById(android.R.id.list);
-			view.setPadding(0, config.getPixelInsetTop(true), 0, config.getPixelInsetBottom());
-		}
 	}
 
 }

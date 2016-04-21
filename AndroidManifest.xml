@@ -67,6 +67,16 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.janrone.app.slidealbum.activity.WebActivity"
+            android:configChanges="orientation|keyboard"
+            android:launchMode="singleTask" 
+            android:label="@string/link_baidu"
+            android:parentActivityName="com.janrone.app.slidealbum.activity.SlideShowActivity"> 
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.hujl.cloudcast.SlideShowActivity"/>
+        </activity>
     </application>
 
 </manifest>

@@ -5,7 +5,7 @@
 
     <PreferenceCategory android:title="@string/pref_account" >
         <Preference
-            android:key="pre_dropbox"
+            android:key="pre_account_type"
             android:summary="@string/pref_account_dropbox_summary"
             android:title="@string/pref_account_dropbox" />
     </PreferenceCategory>
@@ -15,29 +15,6 @@
             android:key="pre_cloud"
             android:summary="@string/pref_cloud_source_summary"
             android:title="@string/pref_cloud_source" />
-    </PreferenceCategory>
-    
-    <PreferenceCategory android:title="@string/pref_about_developers" >
-        <Preference
-            android:key="pref_details_janrone"
-            android:summary="@string/app_details_shirwa_details"
-            android:title="@string/pref_shirwa" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_about_social_connections" >
-        <Preference
-            android:key="pref_about_social_twitter"
-            android:summary="@string/app_social_twitter_summary"
-            android:title="@string/pref_social_twitter" />
-    </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_about_open_source_Libraries" >
-        <Preference
-            android:key="pref_about_android_slideshow_widget"
-            android:summary="@string/app_details_android_slideshow_widget_info"
-            android:title="@string/pref_android_slideshow_widget" />
-        <Preference
-            android:key="pref_about_system_bar_tint"
-            android:summary="@string/app_details_system_bar_tint"
-            android:title="@string/pref_system_bar" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -7,12 +7,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -20,6 +24,8 @@ import android.view.Window;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.AppKeyPair;
+import com.janrone.app.slidealbum.activity.WebActivity;
+import com.janrone.app.slidealbum.util.SystemBarTintManager.SystemBarConfig;
 
 public class Utils {
 
@@ -37,7 +43,8 @@ public class Utils {
 	public final static String ACCESS_KEY_NAME = "ACCESS_KEY";
 	public final static String ACCESS_SECRET_NAME = "ACCESS_SECRET";
 	public final static String ACCOUNT_IS_LOGIN = "IS_LOGIN";
-
+	public final static String ACCOUNT_TYPE = "ACCOUNT_TYPE";
+	
 	public final static String SELECT_FOLDER_URL = "FOLDER_URL";
 
 	public final static String CAST_IMAGE_URL = "CAST_IMAGE_URL";
@@ -45,6 +52,10 @@ public class Utils {
 	public final static String IMAGE_URL_FILE = "image";
 
 	public static boolean mLoggedIn;
+	public static AccountType mAccountType = AccountType.EMPTY;
+	public static String mAccessToken;
+	
+	public static String  mRootPath =  "/apps/wp2pcs";
 
 	public static AndroidAuthSession buildSession(Context context) {
 		AppKeyPair appKeyPair = new AppKeyPair(Utils.APP_KEY, Utils.APP_SECRET);
@@ -57,28 +68,38 @@ public class Utils {
 	public static void loadAuth(Context context, AndroidAuthSession session) {
 		SharedPreferences prefs = context.getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
 
+		AccountType accountType = 
+				Enum.valueOf(AccountType.class, prefs.getString(ACCOUNT_TYPE, ""));
 		String key = prefs.getString(Utils.ACCESS_KEY_NAME, null);
 		String secret = prefs.getString(Utils.ACCESS_SECRET_NAME, null);
+		if(!TextUtils.isEmpty(accountType.toString())){
+			if(accountType.equals(AccountType.DROPBOX)){
+				if (key == null || secret == null || key.length() == 0 || secret.length() == 0)
+					return;
 
-		if (key == null || secret == null || key.length() == 0 || secret.length() == 0)
-			return;
-
-		if (key.equals("oauth2:")) {
-			// If the key is set to "oauth2:", then we can assume the token is
-			// for OAuth 2.
-			session.setOAuth2AccessToken(secret);
-		} else {
-			// Still support using old OAuth 1 tokens.
-			session.setAccessTokenPair(new AccessTokenPair(key, secret));
+				if (key.equals("oauth2:")) {
+					// If the key is set to "oauth2:", then we can assume the token is
+					// for OAuth 2.
+					session.setOAuth2AccessToken(secret);
+				} else {
+					// Still support using old OAuth 1 tokens.
+					session.setAccessTokenPair(new AccessTokenPair(key, secret));
+				}
+			}else if(accountType.equals(AccountType.BAIDU)){
+				Utils.mAccessToken = key;
+			}
 		}
+		
 		boolean isLogin = prefs.getBoolean(Utils.ACCOUNT_IS_LOGIN, false);
-		setLoggedIn(context, isLogin);
+		
+		setLoggedIn(context, isLogin, accountType);
 	}
 
-	public static void isLogin(Context context, boolean isLogin) {
+	public static void isLogin(Context context, boolean isLogin, AccountType accountType) {
 		SharedPreferences prefIsLogin = context.getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
 		Editor edit = prefIsLogin.edit();
 		edit.putBoolean(Utils.ACCOUNT_IS_LOGIN, isLogin);
+		edit.putString(ACCOUNT_TYPE, accountType.toString());
 		edit.commit();
 	}
 
@@ -106,6 +127,15 @@ public class Utils {
 			return;
 		}
 	}
+	
+	public static void storeAuth(Context context, String accessToken){
+		if(!TextUtils.isEmpty(accessToken)){
+			SharedPreferences prefs = context.getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
+			Editor edit = prefs.edit();
+			edit.putString(Utils.ACCESS_KEY_NAME, accessToken);
+			edit.commit();
+		}
+	}
 
 	public static void clearKeys(Context context) {
 		SharedPreferences prefs = context.getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
@@ -114,9 +144,14 @@ public class Utils {
 		edit.commit();
 	}
 
-	public static void setLoggedIn(Context context, boolean loggedIn) {
+	public static void setLoggedIn(Context context, boolean loggedIn, AccountType accountType) {
 		mLoggedIn = loggedIn;
-		isLogin(context, loggedIn);
+		mAccountType = accountType;
+		isLogin(context, loggedIn, accountType);
+	}
+	
+	public static void setAccountType(){
+		
 	}
 
 	public static boolean isExistsImageUrlFile(Context context) {
@@ -196,4 +231,31 @@ public class Utils {
 		}
 		return versionName;
 	}
+	
+	static String url = "http://openapi.baidu.com/oauth/2.0/authorize?response_type=token&client_id=CuOLkaVfoz1zGsqFKDgfvI0h&redirect_uri=oob&scope=netdisk";
+	public static void loginBaidu(Context context){
+		Intent intent = new Intent(context, WebActivity.class);
+		intent.putExtra("url", url);
+		context.startActivity(intent);
+	}
+	
+	/**
+	 * initSystemBar
+	 * @param context Activity
+	 * @param view
+	 */
+	public static void initSystemBar(Context context,View view) {
+	    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+	        //setTranslucentStatus(true);
+	        SystemBarTintManager tintManager = new SystemBarTintManager((Activity)context);
+	        tintManager.setStatusBarTintEnabled(true);
+	        
+	        int actionBarColor = Color.parseColor("#DDDDDD");
+	        tintManager.setStatusBarTintColor(actionBarColor);
+	        //tintManager.setStatusBarTintResource(android.R.drawable.ic_notification_overlay);
+	        SystemBarConfig config = tintManager.getConfig();
+	        view.setPadding(0, config.getPixelInsetTop(true), 0, config.getPixelInsetBottom());
+	    }
+	}
+	
 }

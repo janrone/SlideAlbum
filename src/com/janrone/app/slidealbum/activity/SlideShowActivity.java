@@ -17,6 +17,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.baidu.pcs.BaiduPCSActionInfo;
+import com.baidu.pcs.BaiduPCSActionInfo.PCSCommonFileInfo;
+import com.baidu.pcs.BaiduPCSClient;
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
@@ -28,8 +32,10 @@ import com.janrone.app.slidealbum.slideshow.SlideShowView;
 import com.janrone.app.slidealbum.slideshow.adapter.GenericBitmapAdapter;
 import com.janrone.app.slidealbum.slideshow.adapter.RemoteBitmapAdapter;
 import com.janrone.app.slidealbum.slideshow.picasso.GenericPicassoBitmapAdapter;
+import com.janrone.app.slidealbum.util.AccountType;
 import com.janrone.app.slidealbum.util.SystemBarTintManager;
 import com.janrone.app.slidealbum.util.Utils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -75,55 +81,63 @@ public class SlideShowActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
+
 		initSystemBar();
 
-		AndroidAuthSession session = mApi.getSession();
+		if (Utils.mLoggedIn) {
+			AccountType accountType = Utils.mAccountType;
+			switch (accountType) {
+			case DROPBOX:
+				AndroidAuthSession session = mApi.getSession();
 
-		// The next part must be inserted in the onResume() method of the
-		// activity from which session.startAuthentication() was called, so
-		// that Dropbox authentication completes properly.
-		if (session.authenticationSuccessful()) {
-			try {
-				// Mandatory call to complete the auth
-				session.finishAuthentication();
+				// The next part must be inserted in the onResume() method of
+				// the
+				// activity from which session.startAuthentication() was called,
+				// so
+				// that Dropbox authentication completes properly.
+				if (session.authenticationSuccessful()) {
+					try {
+						// Mandatory call to complete the auth
+						session.finishAuthentication();
 
-				// Store it locally in our app for later use
-				Utils.storeAuth(SlideShowActivity.this, session);
-				Utils.setLoggedIn(SlideShowActivity.this, true);
-			} catch (IllegalStateException e) {
-				// showToast("Couldn't authenticate with Dropbox:"
-				// + e.getLocalizedMessage());
-				Log.i(Utils.TAG, "Error authenticating", e);
+						// Store it locally in our app for later use
+						Utils.storeAuth(SlideShowActivity.this, session);
+						Utils.setLoggedIn(SlideShowActivity.this, true, Utils.mAccountType);
+					} catch (IllegalStateException e) {
+						// showToast("Couldn't authenticate with Dropbox:"
+						// + e.getLocalizedMessage());
+						Log.i(Utils.TAG, "Error authenticating", e);
+					}
+				}
+				break;
+
+			case BAIDU:
+				Utils.storeAuth(SlideShowActivity.this, Utils.mAccessToken);
+				Utils.setLoggedIn(SlideShowActivity.this, true, Utils.mAccountType);
+				break;
+			}
+
+			// String castImageUrl = prefs.getString(Utils.CAST_IMAGE_URL, "");
+			// if (castImageUrl.equals("")) {
+			// new GetCastImage().execute(folderPath, null, null);
+			// }
+
+			// ArrayList<String> list = getCastImageUrlsFromPrefs();
+			// if(list != null) startSlideShow(list);
+
+			if (!Utils.isExistsImageUrlFile(getContext()) || getImageUrlListFromFile() == null || getImageUrlListFromFile().size() == 0) {
+				new GetCastImage().execute(getImageFolder(), null, null);
+			} else {
+				startSlideShow(getImageUrlListFromFile());
 			}
 		}
-
-		// String castImageUrl = prefs.getString(Utils.CAST_IMAGE_URL, "");
-		// if (castImageUrl.equals("")) {
-		// new GetCastImage().execute(folderPath, null, null);
-		// }
-
-		// ArrayList<String> list = getCastImageUrlsFromPrefs();
-		// if(list != null) startSlideShow(list);
-
-		if (!Utils.isExistsImageUrlFile(getContext())
-				|| getImageUrlListFromFile() == null
-				|| getImageUrlListFromFile().size() == 0) {
-			new GetCastImage().execute(getImageFolder(), null, null);
-		} else {
-			startSlideShow(getImageUrlListFromFile());
-		}
 	}
-	
+
 	private void initSystemBar() {
 		View view = getWindow().getDecorView();
 
-		int status = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+		int status = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
 		boolean isFull = view.getSystemUiVisibility() == status;
 		if (isFull) {
@@ -164,8 +178,7 @@ public class SlideShowActivity extends Activity {
 
 	public static int getStatusBarHeight(Context context) {
 		int result = 0;
-		int resourceId = context.getResources().getIdentifier(
-				"status_bar_height", "dimen", "android");
+		int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
 		if (resourceId > 0) {
 			result = context.getResources().getDimensionPixelSize(resourceId);
 		}
@@ -177,8 +190,7 @@ public class SlideShowActivity extends Activity {
 	public ArrayList<String> getImageUrlListFromFile() {
 		try {
 			Gson gson = new Gson();
-			return gson.fromJson(Utils.readAssetsFileString(getContext()),
-					java.util.ArrayList.class);
+			return gson.fromJson(Utils.readAssetsFileString(getContext()), java.util.ArrayList.class);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -200,11 +212,11 @@ public class SlideShowActivity extends Activity {
 		super.onPrepareOptionsMenu(menu);
 		menu.clear();
 		getMenuInflater().inflate(R.menu.slide_show, menu);
-		//if (Utils.mLoggedIn) {
-		//	menu.getItem(0).setTitle(R.string.unlink_dropbox);
-		//} else {
-		//	menu.getItem(0).setTitle(R.string.link_dropbox);
-		//}
+		// if (Utils.mLoggedIn) {
+		// menu.getItem(0).setTitle(R.string.unlink_dropbox);
+		// } else {
+		// menu.getItem(0).setTitle(R.string.link_dropbox);
+		// }
 		return true;
 
 	}
@@ -212,7 +224,7 @@ public class SlideShowActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long 
+		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 
 		int id = item.getItemId();
@@ -220,25 +232,20 @@ public class SlideShowActivity extends Activity {
 			if (Utils.mLoggedIn == true) {
 				logOut();
 			} else {
-				mApi.getSession().startOAuth2Authentication(
-						SlideShowActivity.this);
+				mApi.getSession().startOAuth2Authentication(SlideShowActivity.this);
 			}
 		} else if (id == R.id.select_folder) {
 			if (Utils.mLoggedIn == true) {
-				Intent intent = new Intent(SlideShowActivity.this,
-						FolderActivity.class);
+				Intent intent = new Intent(SlideShowActivity.this, FolderActivity.class);
 				startActivityForResult(intent, Utils.REQUEST_FOLDER_ACTIVITY);
 			} else {
-				mApi.getSession().startOAuth2Authentication(
-						SlideShowActivity.this);
+				mApi.getSession().startOAuth2Authentication(SlideShowActivity.this);
 			}
 		} else if (id == R.id.action_about) {
-			Intent intent = new Intent(SlideShowActivity.this,
-					AboutActivity.class);
+			Intent intent = new Intent(SlideShowActivity.this, AboutActivity.class);
 			startActivity(intent);
 		} else if (id == R.id.action_settings) {
-			Intent intent = new Intent(SlideShowActivity.this,
-					SettingsActivity.class);
+			Intent intent = new Intent(SlideShowActivity.this, SettingsActivity.class);
 			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
@@ -255,8 +262,7 @@ public class SlideShowActivity extends Activity {
 	}
 
 	public String getImageFolder() {
-		SharedPreferences prefs = getSharedPreferences(
-				Utils.ACCOUNT_PREFS_NAME, 0);
+		SharedPreferences prefs = getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
 		return prefs.getString(Utils.SELECT_FOLDER_URL, "");
 	}
 
@@ -267,19 +273,17 @@ public class SlideShowActivity extends Activity {
 		// Clear our stored keys
 		Utils.clearKeys(SlideShowActivity.this);
 		// Change UI state to display logged out version
-		Utils.setLoggedIn(SlideShowActivity.this, false);
+		Utils.setLoggedIn(SlideShowActivity.this, false, AccountType.EMPTY);
 	}
 
 	private ArrayList<String> getCastImageUrlsFromPrefs() {
 
 		// 从ObjectInputStream中读取Entry对象
 		try {
-			SharedPreferences prefs = getSharedPreferences(
-					Utils.ACCOUNT_PREFS_NAME, 0);
+			SharedPreferences prefs = getSharedPreferences(Utils.ACCOUNT_PREFS_NAME, 0);
 			String castImageUrl = prefs.getString(Utils.CAST_IMAGE_URL, "");
 
-			byte[] base64Bytes = Base64.decode(castImageUrl.getBytes(),
-					Base64.DEFAULT);
+			byte[] base64Bytes = Base64.decode(castImageUrl.getBytes(), Base64.DEFAULT);
 			ByteArrayInputStream bais = new ByteArrayInputStream(base64Bytes);
 			ObjectInputStream ois = new ObjectInputStream(bais);
 			return (ArrayList<String>) ois.readObject();
@@ -291,15 +295,12 @@ public class SlideShowActivity extends Activity {
 	}
 
 	private SlideShowAdapter createRemoteAdapter(ArrayList<String> thumbs) {
-		String[] slideUrls = new String[] {
-				"http://lorempixel.com/1280/720/sports",
-				"http://lorempixel.com/1280/720/nature",
-				"http://lorempixel.com/1280/720/people",
+		String[] slideUrls = new String[] { "http://lorempixel.com/1280/720/sports", "http://lorempixel.com/1280/720/nature", "http://lorempixel.com/1280/720/people",
 				"http://lorempixel.com/1280/720/city", };
 		BitmapFactory.Options opts = new BitmapFactory.Options();
 		opts.inSampleSize = 2;
 		adapter = new RemoteBitmapAdapter(this, thumbs, opts, CloudCast.mApi);
-		return adapter; 
+		return adapter;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -341,26 +342,22 @@ public class SlideShowActivity extends Activity {
 	private SlideShowView.OnSlideShowEventListener slideShowListener = new SlideShowView.OnSlideShowEventListener() {
 		@Override
 		public void beforeSlideShown(SlideShowView parent, int position) {
-			Log.d("SlideShowDemo",
-					"OnSlideShowEventListener.beforeSlideShown: " + position);
+			Log.d("SlideShowDemo", "OnSlideShowEventListener.beforeSlideShown: " + position);
 		}
 
 		@Override
 		public void onSlideShown(SlideShowView parent, int position) {
-			Log.d("SlideShowDemo", "OnSlideShowEventListener.onSlideShown: "
-					+ position);
+			Log.d("SlideShowDemo", "OnSlideShowEventListener.onSlideShown: " + position);
 		}
 
 		@Override
 		public void beforeSlideHidden(SlideShowView parent, int position) {
-			Log.d("SlideShowDemo",
-					"OnSlideShowEventListener.beforeSlideHidden: " + position);
+			Log.d("SlideShowDemo", "OnSlideShowEventListener.beforeSlideHidden: " + position);
 		}
 
 		@Override
 		public void onSlideHidden(SlideShowView parent, int position) {
-			Log.d("SlideShowDemo", "OnSlideShowEventListener.onSlideHidden: "
-					+ position);
+			Log.d("SlideShowDemo", "OnSlideShowEventListener.onSlideHidden: " + position);
 		}
 	};
 
@@ -376,34 +373,54 @@ public class SlideShowActivity extends Activity {
 			// TODO Auto-generated method stub
 			try {
 
-				String[] folders = params[0].split(";");
+				if (Utils.mAccountType.equals(AccountType.DROPBOX)) {
+					String[] folders = params[0].split(";");
 
-				for (int i = 0; i < folders.length; i++) {
-					listEntry = new ArrayList<Entry>();
-					Entry entry = CloudCast.mApi.metadata(folders[i],
-							Utils.FILE_LIMIT, null, true, null);
-					if (entry.isDir && entry.contents != null) {
-						listEntry.add(entry);
+					for (int i = 0; i < folders.length; i++) {
+						listEntry = new ArrayList<Entry>();
+						Entry entry = CloudCast.mApi.metadata(folders[i], Utils.FILE_LIMIT, null, true, null);
+						if (entry.isDir && entry.contents != null) {
+							listEntry.add(entry);
+						}
 					}
-				}
 
-				thumbs = new ArrayList<String>();
-				if (listEntry != null && listEntry.size() != 0) {
-					for (Entry le : listEntry) {
-						for (Entry e : le.contents) {
-							if (e.thumbExists) {
-								// Add it to the list of thumbs we can choose
-								// from
-								thumbs.add(e.path);
-								System.err.println("e.path" + e.path);
+					thumbs = new ArrayList<String>();
+					if (listEntry != null && listEntry.size() != 0) {
+						for (Entry le : listEntry) {
+							for (Entry e : le.contents) {
+								if (e.thumbExists) {
+									// Add it to the list of thumbs we can
+									// choose
+									// from
+									thumbs.add(e.path);
+									System.err.println("e.path" + e.path);
+								}
 							}
 						}
 					}
+				} else if (Utils.mAccountType.equals(AccountType.BAIDU)) {
+					BaiduPCSClient api = new BaiduPCSClient();
+					api.setAccessToken(Utils.mAccessToken);
+					String path = Utils.mRootPath;
+
+					Log.d("TAG", "path" + path);
+					final BaiduPCSActionInfo.PCSListInfoResponse ret = api.list(path, "name", "asc");
+					// final BaiduPCSActionInfo.PCSListInfoResponse ret =
+					// api.imageStream();
+
+					thumbs = new ArrayList<String>();
+					if (ret.list != null && ret.list.size() != 0) {
+						for (PCSCommonFileInfo le : ret.list) {
+							if (!le.isDir) {
+								// Add it to the list of thumbs we can choose
+								// from
+								thumbs.add(le.path);
+							}
+						}
+					}
+
 				}
 
-			} catch (DropboxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -416,8 +433,7 @@ public class SlideShowActivity extends Activity {
 			if (thumbs != null) {
 				try {
 					Gson gson = new Gson();
-					Utils.writeToFile(SlideShowActivity.this,
-							gson.toJson(thumbs, java.util.ArrayList.class));
+					Utils.writeToFile(SlideShowActivity.this, gson.toJson(thumbs, java.util.ArrayList.class));
 					startSlideShow(getImageUrlListFromFile());
 					// getCacheDir();
 					// SharedPreferences prefs = getSharedPreferences(
@@ -449,18 +465,12 @@ public class SlideShowActivity extends Activity {
 	}
 
 	public void hideSystemUI(View view) {
-		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_FULLSCREEN
-				| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+				| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 	}
 
 	public void showSystemUI(View view) {
-		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-				| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-				| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+		view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 	}
 
 }

@@ -32,7 +32,7 @@ public class RemoteBitmapAdapter extends GenericRemoteBitmapAdapter<String> {
      * @param bitmapFactoryOptions The options to pass to the BitmapFactory used to decode the
      *                             bitmaps
      */
-    public RemoteBitmapAdapter(Context context, Collection<String> urls, BitmapFactory.Options bitmapFactoryOptions,DropboxAPI<?> api) {
+    public RemoteBitmapAdapter(Context context, Collection<String> urls, BitmapFactory.Options bitmapFactoryOptions, Object api) {
         super(context, urls, bitmapFactoryOptions, api);
     }
 

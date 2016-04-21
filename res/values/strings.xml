@@ -9,6 +9,8 @@
     <string name="link_dropbox">Link DropBox</string>
     <string name="done">Done</string>
     <string name="unlink_dropbox">UnLink DropBox</string>
+    <string name="link_baidu">Link BaiDu</string>
+    <string name="unlink_baidu">UnLink BaiDu</string>
     <string name="pref_version_title">Version </string>
     <string name="pref_build_title">Build</string>
     <string name="pref_credits_title">Developers</string>
@@ -50,6 +52,9 @@
     <string name="pref_account">ACCOUNT TYPE</string>
     <string name="pref_account_dropbox">DropBox</string>
     <string name="pref_account_dropbox_summary">Link DropBox</string>
+    
+    <string name="pref_account_baidu">BaiDu</string>
+    <string name="pref_account_baidu_summary">Link BaiDu</string>
     
     <string name="pref_select_folder">Slide Source</string>
     <string name="pref_cloud_source">Slide Source</string>
